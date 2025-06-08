@@ -3,123 +3,1684 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imagen del Día</title>
-    <!-- Tailwind CSS para un diseño moderno -->
+    <title>PromptLab - Agencia de Marca Personal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- FAVICON SVG INCRUSTADO: Tu nuevo favicon directamente en el HTML -->
+    <!-- Este SVG simple muestra las letras ‘PL’ (PromptLab) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3C!-- Fondo azul --%3E%3Crect width='100' height='100' fill='%232563eb' rx='20'/%3E%3C!-- Texto ‘PL’ blanco y centrado --%3E%3Ctext x='50%25' y='65%25' font-family='Inter, sans-serif' font-size='50' fill='%23ffffff' text-anchor='middle' dominant-baseline='middle' font-weight='bold'%3EPL%3C/text%3E%3C/svg%3E">
+    
+    <!-- Carga de Tailwind CSS CDN para usar sus utilidades directamente en el HTML y React -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Estilos personalizados y de carga */
+        /* Estilos base para el cuerpo y la fuente */
         body {
             font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc; /* Tailwind: bg-slate-50 */
         }
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 8px solid #3498db;
-            width: 60px;
-            height: 60px;
-            animation: spin 2s linear infinite;
+
+        /* Estilos para el contenedor principal de cada sección */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            width: 100%;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        /* Estilos generales para botones */
+        .btn-primary {
+            display: inline-block;
+            background-color: #2563eb; /* Tailwind: bg-blue-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem; /* Tailwind: rounded-lg */
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Tailwind: shadow-md */
         }
-    </style>
-</head>
-<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
+        .btn-primary:hover {
+            background-color: #1d4ed8; /* Tailwind: bg-blue-700 */
+            transform: translateY(-2px);
+        }
 
-    <!-- He hecho este contenedor principal más robusto para evitar solapamientos -->
-    <main class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden relative z-10">
-        <div class="p-8">
-            <h1 class="text-3xl font-bold text-center text-gray-900 mb-2">Imagen del Día</h1>
-            <p class="text-center text-gray-600 mb-6">Una nueva imagen inspiradora cada vez que visitas.</p>
-        </div>
+        .btn-secondary {
+            display: inline-block;
+            background-color: transparent;
+            color: #2563eb; /* Tailwind: text-blue-600 */
+            border: 2px solid #2563eb; /* Tailwind: border-blue-600 */
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem; /* Tailwind: rounded-lg */
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Tailwind: shadow-md */
+        }
+        .btn-secondary:hover {
+            background-color: #eff6ff; /* Tailwind: bg-blue-50 */
+            color: #1e40af; /* Tailwind: text-blue-800 */
+            transform: translateY(-2px);
+        }
 
-        <!-- Contenedor de la Imagen -->
-        <div id="image-container" class="bg-gray-200 min-h-[400px] flex items-center justify-center">
-            <!-- Loader (indicador de carga) se mostrará aquí -->
-            <div id="loader" class="loader"></div>
-        </div>
-        
-        <!-- Créditos de la Imagen -->
-        <div id="credits" class="p-6 bg-gray-50 text-center">
-             <!-- La información del autor se cargará aquí -->
-        </div>
-    </main>
+        /* Estilos para el encabezado de sección */
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-top: 3rem;
+        }
 
-    <script>
-        // --- CONFIGURACIÓN ---
-        // Recuerda generar una NUEVA clave si la anterior fue expuesta.
-        const apiKey = '_rA_cBSRPjqa6N1l16cJD1PyQX_K02AfqUfZ5CKxAXI';
-        
-        // --- ELEMENTOS DEL DOM ---
-        const imageContainer = document.getElementById('image-container');
-        const creditsContainer = document.getElementById('credits');
-        const loader = document.getElementById('loader');
-
-        // --- LÓGICA DE LA API ---
-        async function fetchImageOfTheDay() {
-            const topic = 'travel'; // ¡Cambié el tema a "viajes" para que veas algo nuevo!
-            const apiUrl = `https://api.unsplash.com/photos/random?query=${topic}&orientation=landscape&client_id=${apiKey}`;
-
-            loader.style.display = 'block';
-
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) {
-                    if (response.status === 401) {
-                         throw new Error('La clave de API no es válida. Por favor, genera una nueva en Unsplash y pégala aquí.');
-                    } else if (response.status === 403) {
-                         throw new Error('Límite de peticiones alcanzado. Inténtalo de nuevo en una hora.');
-                    }
-                    throw new Error(`Error en la API: ${response.statusText}`);
-                }
-                const data = await response.json();
-                displayImage(data);
-            } catch (error) {
-                console.error('Error al obtener la imagen:', error);
-                displayError(error.message);
+        .section-title {
+            font-size: 2.5rem; /* Tailwind: text-4xl */
+            font-weight: 700; /* Tailwind: font-bold */
+            color: #1a202c; /* Tailwind: text-gray-900 */
+            margin-bottom: 1rem;
+            font-family: 'Playfair Display', serif; /* Estilo de fuente distintivo */
+        }
+        @media (min-width: 768px) {
+            .section-title {
+                font-size: 3rem; /* Tailwind: md:text-5xl */
             }
         }
 
-        // Función para mostrar la imagen y los créditos en la página
-        function displayImage(data) {
-            loader.style.display = 'none';
-            imageContainer.innerHTML = '';
+        .section-subtitle {
+            font-size: 1.125rem; /* Tailwind: text-lg */
+            color: #4a5568; /* Tailwind: text-gray-700 */
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-            const img = document.createElement('img');
-            img.src = data.urls.regular;
-            img.alt = data.alt_description || 'Imagen del día';
-            img.className = 'w-full h-full object-cover';
-            img.onerror = () => { displayError('Hubo un problema al cargar la imagen.'); };
+        /* Hero Section */
+        .hero {
+            position: relative;
+            background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%); /* Degradado de fondo */
+            padding: 4rem 0; /* Tailwind: py-16 */
+            text-align: center;
+            overflow: hidden; /* Para contener los elementos flotantes */
+        }
 
-            imageContainer.appendChild(img);
-            creditsContainer.innerHTML = `
-                <p class="text-sm">
-                    Foto por 
-                    <a href="${data.user.links.html}?utm_source=image-of-the-day-app&utm_medium=referral" target="_blank" class="font-semibold text-blue-600 hover:underline">
-                        ${data.user.name}
-                    </a> 
-                    en 
-                    <a href="https://unsplash.com/?utm_source=image-of-the-day-app&utm_medium=referral" target="_blank" class="font-semibold text-blue-600 hover:underline">
-                        Unsplash
-                    </a>
+        .hero-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .hero-container {
+                flex-direction: row;
+                justify-content: space-between;
+                text-align: left;
+            }
+        }
+
+        .hero-content {
+            flex: 1;
+            padding-right: 0;
+            z-index: 10;
+        }
+
+        @media (min-width: 768px) {
+            .hero-content {
+                padding-right: 2rem;
+            }
+        }
+
+        .hero-title {
+            font-size: 2.8rem; /* Tailwind: text-5xl */
+            font-weight: 800; /* Tailwind: font-extrabold */
+            color: #1a202c; /* Tailwind: text-gray-900 */
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            font-family: 'Playfair Display', serif; /* Estilo de fuente distintivo */
+        }
+        @media (min-width: 768px) {
+            .hero-title {
+                font-size: 4rem; /* Tailwind: md:text-6xl */
+            }
+        }
+
+        .hero-title .highlight {
+            color: #2563eb; /* Tailwind: text-blue-600 */
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem; /* Tailwind: text-xl */
+            color: #4a5568; /* Tailwind: text-gray-700 */
+            margin-bottom: 2rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        @media (min-width: 640px) {
+            .hero-buttons {
+                flex-direction: row;
+            }
+        }
+
+        .hero-visual {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10; /* Asegura que la imagen esté por encima de las partículas */
+        }
+
+        .hero-graphic {
+            max-width: 100%;
+            height: auto;
+            border-radius: 1rem; /* Tailwind: rounded-xl */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
+        }
+
+        /* Stats Section */
+        .stats {
+            background-color: #f1f5f9; /* Tailwind: bg-slate-100 */
+            padding: 3rem 0; /* Tailwind: py-12 */
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 2rem;
+        }
+
+        @media (min-width: 640px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr); /* Tailwind: sm:grid-cols-2 */
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr); /* Tailwind: lg:grid-cols-4 */
+            }
+        }
+
+        .stat-item {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem; /* Tailwind: rounded-lg */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Tailwind: shadow-sm */
+            transition: transform 0.3s ease;
+        }
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 3rem; /* Tailwind: text-5xl */
+            font-weight: 700;
+            color: #2563eb; /* Tailwind: text-blue-600 */
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.125rem; /* Tailwind: text-lg */
+            color: #4a5568;
+        }
+
+        /* Services Section */
+        .services {
+            padding: 4rem 0; /* Tailwind: py-16 */
+            background-color: #ffffff;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr); /* Tailwind: md:grid-cols-2 */
+            }
+        }
+        @media (min-width: 1024px) {
+            .services-grid {
+                grid-template-columns: repeat(3, 1fr); /* Tailwind: lg:grid-cols-3 */
+            }
+        }
+
+        .service-card {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1rem; /* Tailwind: rounded-xl */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* Tailwind: shadow-lg */
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .service-icon {
+            font-size: 3rem; /* Tailwind: text-5xl */
+            margin-bottom: 1.5rem;
+        }
+
+        .service-title {
+            font-size: 1.75rem; /* Tailwind: text-2xl */
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 1rem;
+        }
+
+        .service-description {
+            color: #4a5568;
+        }
+
+        /* Cases Section */
+        .cases {
+            padding: 4rem 0; /* Tailwind: py-16 */
+            background-color: #f1f5f9; /* Tailwind: bg-slate-100 */
+        }
+
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .cases-grid {
+                grid-template-columns: repeat(2, 1fr); /* Tailwind: md:grid-cols-2 */
+            }
+        }
+        @media (min-width: 1024px) {
+            .cases-grid {
+                grid-template-columns: repeat(2, 1fr); /* Para dejar espacio en caso de añadir más columnas */
+            }
+        }
+
+        .case-card {
+            background-color: white;
+            border-radius: 1rem; /* Tailwind: rounded-xl */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .case-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .case-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .case-content {
+            padding: 2rem;
+        }
+
+        .case-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 0.75rem;
+        }
+
+        .case-description {
+            color: #4a5568;
+            margin-bottom: 1.5rem;
+        }
+
+        .case-metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .metric {
+            background-color: #e0f2fe; /* Tailwind: bg-blue-50 */
+            color: #1d4ed8; /* Tailwind: text-blue-800 */
+            padding: 0.5rem 1rem;
+            border-radius: 9999px; /* Tailwind: rounded-full */
+            font-size: 0.875rem; /* Tailwind: text-sm */
+            font-weight: 600;
+        }
+
+        /* About Section */
+        .about {
+            padding: 4rem 0;
+            background-color: #ffffff;
+        }
+
+        .about-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        @media (min-width: 768px) {
+            .about-content {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            .about-text {
+                flex: 1;
+                padding-right: 2rem;
+            }
+            .about-visual {
+                flex: 1;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+
+        .about-description {
+            color: #4a5568;
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+
+        /* Testimonials Section */
+        .testimonials {
+            padding: 4rem 0;
+            background-color: #f1f5f9; /* Tailwind: bg-slate-100 */
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .testimonial-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 1024px) {
+            .testimonial-grid {
+                grid-template-columns: repeat(2, 1fr); /* Se mantiene 2 para un layout atractivo */
+            }
+        }
+
+        .testimonial-card {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .testimonial-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .testimonial-quote {
+            font-size: 1.125rem;
+            font-style: italic;
+            color: #2d3748; /* Tailwind: text-gray-800 */
+            margin-bottom: 1.5rem;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+            color: #2563eb;
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 4rem 0;
+            background-color: #ffffff;
+        }
+
+        .contact-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        @media (min-width: 768px) {
+            .contact-content {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+            .contact-form {
+                flex: 2;
+                padding-right: 2rem;
+            }
+            .contact-info {
+                flex: 1;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0; /* Tailwind: border-gray-300 */
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #4a5568;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); /* Tailwind: ring-blue-500/20 */
+        }
+
+        .contact-info h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info p {
+            color: #4a5568;
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-info ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .contact-info ul li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #4a5568;
+        }
+
+        .contact-info .info-icon {
+            font-size: 1.5rem;
+            color: #2563eb;
+            margin-right: 0.75rem;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #1a202c; /* Tailwind: bg-gray-900 */
+            color: white;
+            padding: 2.5rem 0; /* Tailwind: py-10 */
+            text-align: center;
+        }
+
+        .footer .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .footer .container {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 0.75rem;
+            transition: color 0.3s ease;
+        }
+        .footer-links a:hover {
+            color: #a0aec0; /* Tailwind: text-gray-400 */
+        }
+
+        /* Estilos personalizados para el reproductor flotante */
+        #floating-player-root {
+            position: fixed;
+            bottom: 20px; /* Ajusta la distancia desde la parte inferior */
+            right: 20px; /* Ajusta la distancia desde la parte derecha */
+            z-index: 1000; /* Asegura que esté por encima de otros elementos */
+        }
+        #floating-player-root button {
+            background-color: #2563eb; /* Color azul de fondo */
+            color: white;
+            border-radius: 9999px; /* Hace que el botón sea completamente redondo */
+            width: 60px; /* Ancho del botón */
+            height: 60px; /* Alto del botón */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra para destacarlo */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        #floating-player-root button:hover {
+            background-color: #1d4ed8; /* Color azul más oscuro al pasar el ratón */
+            transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+        }
+        #floating-player-root button svg {
+            width: 32px; /* Tamaño del icono */
+            height: 32px; /* Tamaño del icono */
+        }
+        .tooltip {
+            visibility: hidden;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 100%; /* Arriba del botón */
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            margin-bottom: 10px; /* Espacio entre el botón y el tooltip */
+            pointer-events: none; /* Asegura que el tooltip no bloquee clicks */
+        }
+        #floating-player-button:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Estilos para el contenedor de la imagen de la empresa para centrarla */
+        .company-image-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem; /* Espacio superior */
+            margin-bottom: 2rem; /* Espacio inferior */
+        }
+        .company-image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.75rem; /* rounded-lg en Tailwind */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg en Tailwind */
+        }
+
+        /* Asegurar que las imágenes de placeholder también se ajusten bien */
+        img[alt="Gráfico de Impacto"], img[alt="Equipo de PromptLab"] {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Asegurar responsividad para grid de servicios y casos */
+        @media (min-width: 640px) { /* sm breakpoint */
+            .services-grid, .cases-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+        }
+
+        /* Estilos para el efecto de texto “Tigo” */
+        .tigo-effect {
+            font-size: 3rem; /* Tamaño de fuente para que el efecto sea visible */
+            font-weight: 700; /* Negrita */
+            background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa, #1d4ed8); /* Degradado azulado */
+            background-size: 200% 100%; /* Duplicar el tamaño para la animación */
+            -webkit-background-clip: text; /* Recortar el fondo al texto */
+            -webkit-text-fill-color: transparent; /* Hacer el texto transparente para ver el fondo */
+            animation: tigo-shine 3s linear infinite; /* Animación de brillo */
+            display: inline-block; /* Necesario para aplicar transformaciones y animaciones de fondo */
+            padding: 0 0.25rem; /* Pequeño padding para el efecto visual */
+            border-radius: 0.5rem; /* Bordes redondeados */
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); /* Sombra suave para un efecto de “glow” */
+        }
+
+        @keyframes tigo-shine {
+            0% {
+                background-position: 200% 0; /* Iniciar el degradado desde la derecha */
+            }
+            100% {
+                background-position: -200% 0; /* Mover el degradado hacia la izquierda */
+            }
+        }
+
+        /* Animaciones para los elementos que aparecen con el scroll */
+        /* La clase ‘animated’ los oculta inicialmente */
+        .animated {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        /* La clase ‘is-visible’ se añade por JS para mostrarlos */
+        .animated.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Animación para partículas flotantes (usada por JS) */
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0.1; }
+            50% { transform: translateY(-20px) translateX(20px); opacity: 0.3; }
+            100% { transform: translateY(0) translateX(0); opacity: 0.1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sección principal de bienvenida (Hero Section) -->
+    <section class="hero" id="inicio">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Amplifica tu <span class="tigo-effect">alcance</span>, 
+                    <span class="tigo-effect">impacto</span> y 
+                    <span class="tigo-effect">legado</span> personal
+                </h1>
+                <p class="hero-subtitle">
+                    Transformamos profesionales en líderes de opinión reconocidos. 
+                    Desde estrategia hasta ejecución, construimos marcas personales que destacan.
                 </p>
-            `;
-        }
-        
-        // Función para mostrar mensajes de error
-        function displayError(message) {
-            loader.style.display = 'none';
-            imageContainer.innerHTML = '';
-            creditsContainer.innerHTML = `<p class="text-red-500 font-semibold">${message}</p>`;
+                <div class="hero-buttons">
+                    <a href="#servicios" class="btn-primary">Descubre Cómo</a>
+                    <a href="#casos" class="btn-secondary">Ver Casos de Éxito</a>
+                </div>
+            </div>
+            <!-- Sección de la imagen en el Hero, ahora con el logo de PromptLab -->
+            <div class="hero-visual">
+                <img src="image.png" 
+                     alt="Logotipo de la Empresa PromptLab" 
+                     class="hero-graphic w-full max-w-sm md:max-w-md lg:max-w-lg mx-auto md:mx-0" 
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='https://placehold.co/450x400/2563eb/FFFFFF?text=Error+al+cargar+imagen';" />
+            </div>
+        </div>
+        <!-- Contenedor para las partículas flotantes generadas por JS -->
+        <div class="particles-container absolute inset-0 z-0 pointer-events-none overflow-hidden"></div>
+    </section>
+
+    <!-- Sección de estadísticas clave -->
+    <section class="stats" id="estadisticas">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item animated"> <!-- Añadida clase ‘animated’ -->
+                    <h3 class="stat-number">150+</h3>
+                    <p class="stat-label">Marcas Personales Creadas</p>
+                </div>
+                <div class="stat-item animated"> <!-- Añadida clase ‘animated’ -->
+                    <h3 class="stat-number">500%</h3>
+                    <p class="stat-label">Incremento Promedio en Alcance</p>
+                </div>
+                <div class="stat-item animated"> <!-- Añadida clase ‘animated’ -->
+                    <h3 class="stat-number">95%</h3>
+                    <p class="stat-label">Satisfacción del Cliente</p>
+                </div>
+                <div class="stat-item animated"> <!-- Añadida clase ‘animated’ -->
+                    <h3 class="stat-number">3 años</h3>
+                    <p class="stat-label">Experiencia Especializada</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de servicios ofrecidos -->
+    <section class="services" id="servicios">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Nuestros Servicios</h2>
+                <p class="section-subtitle">Todo lo que necesitas para construir una marca personal sólida</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card animated"> <!-- Añadida clase ‘animated’ -->
+                    <div class="service-icon">🎯</div>
+                    <h3 class="service-title">Estrategia de Marca Personal</h3>
+                    <p class="service-description">
+                        Definimos tu propuesta de valor única, posicionamiento 
+                        y roadmap estratégico para destacar en tu sector.
+                    </p>
+                </div>
+                <div class="service-card animated"> <!-- Añadida clase ‘animated’ -->
+                    <div class="service-icon">🚀</div>
+                    <h3 class="service-title">Diseño Web Personal</h3>
+                    <p class="service-description">
+                        Creamos tu presencia digital profesional con sitios web 
+                        que reflejan tu personalidad y objetivos.
+                    </p>
+                </div>
+                <div class="service-card animated"> <!-- Añadida clase ‘animated’ -->
+                    <div class="service-icon">📈</div>
+                    <h3 class="service-title">Gestión de Presencia Digital</h3>
+                    <p class="service-description">
+                        Optimizamos tu presencia en redes sociales y plataformas 
+                        digitales para maximizar tu impacto.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de casos de éxito y testimonios -->
+    <section class="cases" id="casos">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Casos de Éxito</h2>
+                <p class="section-subtitle">Resultados reales de nuestros clientes</p>
+            </div>
+            <div class="cases-grid">
+                <div class="case-card animated"> <!-- Añadida clase ‘animated’ -->
+                    <!-- Placeholder para la imagen del caso de éxito. Sugerencia: reemplazar con imágenes reales -->
+                    <img src="https://placehold.co/400x250/f97316/FFFFFF?text=Caso+1" alt="Caso de Éxito 1" class="case-image" loading="lazy">
+                    <div class="case-content">
+                        <h4 class="case-title">CEO Tech Startup</h4>
+                        <p class="case-description">
+                            Incrementó su alcance en LinkedIn de 1K a 50K seguidores 
+                            en 6 meses, posicionándose como líder en IA.
+                        </p>
+                        <div class="case-metrics">
+                            <span class="metric">+4900% Alcance</span>
+                            <span class="metric">150% Leads</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="case-card animated"> <!-- Añadida clase ‘animated’ -->
+                    <!-- Placeholder para la imagen del caso de éxito. Sugerencia: reemplazar con imágenes reales -->
+                    <img src="https://placehold.co/400x250/2563eb/FFFFFF?text=Caso+2" alt="Caso de Éxito 2" class="case-image" loading="lazy">
+                    <div class="case-content">
+                        <h4 class="case-title">Consultora Financiera</h4>
+                        <p class="case-description">
+                            Construimos su marca personal desde cero, 
+                            consiguiendo +100 clientes premium en 8 meses.
+                        </p>
+                        <div class="case-metrics">
+                            <span class="metric">300% Ingresos</span>
+                            <span class="metric">+100 Clientes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección “Sobre Nosotros” -->
+    <section class="about" id="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">Sobre PromptLab</h2>
+                    <p class="about-description">
+                        Somos especialistas en transformar profesionales talentosos 
+                        en referentes de su sector. Combinamos estrategia, creatividad 
+                        y tecnología para construir marcas personales auténticas y poderosas.
+                    </p>
+                    <p class="about-description">
+                        Nuestro equipo multidisciplinar trabaja de forma personalizada 
+                        con cada cliente, entendiendo sus objetivos y desarrollando 
+                        una hoja de ruta a medida para maximizar su visibilidad y credibilidad.
+                        Creemos que cada profesional tiene una historia única que contar y un 
+                        impacto que generar. En PromptLab, te ayudamos a contar esa historia y 
+                        a construir el legado que mereces.
+                    </p>
+                </div>
+                <!-- Imagen para la sección “Nosotros” -->
+                <div class="about-visual">
+                     <img src="https://placehold.co/400x300/F0F0F0/000000?text=Equipo+PromptLab" alt="Equipo de PromptLab" class="rounded-lg shadow-lg" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Nueva sección para la imagen de la empresa, como lo solicitaste -->
+    <section class="py-12 bg-gray-50">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Nuestra Visión</h2>
+                <p class="section-subtitle">Conoce más sobre nuestra cultura y equipo.</p>
+            </div>
+            <div class="company-image-container">
+                <!-- Aquí se ha incrustado la imagen de tu logotipo. Ya estaba en tu HTML original -->
+                <img src="image.png" alt="Logotipo de la Empresa PromptLab" class="rounded-lg shadow-lg">
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Testimonios -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Lo que dicen nuestros clientes</h2>
+                <p class="section-subtitle">Historias de éxito que nos inspiran</p>
+            </div>
+            <div class="testimonial-grid">
+                <div class="testimonial-card animated"> <!-- Añadida clase ‘animated’ -->
+                    <p class="testimonial-quote">”PromptLab transformó completamente mi presencia online. Su estrategia fue clave para convertirme en un referente de mi industria.”</p>
+                    <p class="testimonial-author">- Laura G., Emprendedora Digital</p>
+                </div>
+                <div class="testimonial-card animated"> <!-- Añadida clase ‘animated’ -->
+                    <p class="testimonial-quote">”El equipo de PromptLab no solo construyó mi sitio web, sino que también me ayudó a definir mi mensaje y mi valor único. ¡Impresionante!”</p>
+                    <p class="testimonial-author"> - Carlos M., Consultor Senior</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Contacto -->
+    <section class="contact" id="contacto">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Contáctanos</h2>
+                <p class="section-subtitle">Empecemos a construir tu marca personal hoy</p>
+            </div>
+            <div class="contact-content">
+                <form class="contact-form">
+                    <div class="form-group">
+                        <label for="name">Nombre completo</label>
+                        <input type="text" id="name" name="name" placeholder="Tu nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Correo electrónico</label>
+                        <input type="email" id="email" name="email" placeholder="tu.email@ejemplo.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Tu mensaje</label>
+                        <textarea id="message" name="message" rows="5" placeholder="Cuéntanos sobre tu proyecto o pregunta"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Enviar Mensaje</button>
+                </form>
+                <div class="contact-info">
+                    <h3>¿Listo para destacar?</h3>
+                    <p>Déjanos tus datos y nos pondremos en contacto contigo a la brevedad.</p>
+                    <ul>
+                        <li><span class="info-icon">📧</span> info@promptlab.com</li>
+                        <li><span class="info-icon">📞</span> +34 123 456 789</li>
+                        <li><span class="info-icon">📍</span> Calle Ficticia 123, Ciudad</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección para la Aplicación Interactiva de React (Pronóstico y Selección de Radio) -->
+    <section id="app-interactiva" class="py-12 bg-gray-100">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Nuestra Aplicación Interactiva</h2>
+                <p class="section-subtitle">Descubre el pronóstico del tiempo y gestiona tus emisoras.</p>
+            </div>
+            <!-- Este es el div donde se montará la aplicación de React principal -->
+            <div id="react-app-main-content">
+                <!-- El contenido de React principal se cargará aquí -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Pie de página (Footer) -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; <span id="current-year"></span> PromptLab. Todos los derechos reservados.</p>
+            <div class="footer-links">
+                <a href="#">Política de Privacidad</a>
+                <a href="#">Términos de Servicio</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Contenedor para el reproductor flotante (fuera del flujo normal del documento) -->
+    <div id="floating-player-root"></div>
+
+    <!-- Script principal de JavaScript para animaciones e interactividad -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Actualizar el año actual en el footer automáticamente
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+
+            // Referencias a elementos del DOM para optimizar el rendimiento
+            const heroTitle = document.querySelector('.hero-title');
+            const heroSubtitle = document.querySelector('.hero-subtitle');
+            const statsNumbers = document.querySelectorAll('.stat-number');
+            const serviceCards = document.querySelectorAll('.service-card');
+            const caseCards = document.querySelectorAll('.case-card');
+            const testimonialCards = document.querySelectorAll('.testimonial-card'); 
+            const contactForm = document.querySelector('.contact-form');
+            
+            // ===========================================
+            // 1. NAVEGACIÓN SUAVE ENTRE SECCIONES
+            // ===========================================
+
+            /**
+             * Inicializa la navegación suave para todos los enlaces internos.
+             */
+            function initSmoothScrolling() {
+                const navLinks = document.querySelectorAll('a[href^="#"]');
+                
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault(); 
+                        const targetId = this.getAttribute('href').substring(1); 
+                        const targetSection = document.getElementById(targetId);
+                        
+                        if (targetSection) {
+                            window.scrollTo({
+                                top: targetSection.offsetTop,
+                                behavior: 'smooth' 
+                            });
+                        }
+                    });
+                });
+            }
+
+            // ===========================================
+            // 3. ANIMACIONES DE LA SECCIÓN HERO
+            // ===========================================
+
+            /**
+             * Anima el título del hero palabra por palabra, con un efecto de subida.
+             * Se ha ajustado para mantener los espacios correctamente usando nodos de texto explícitos.
+             */
+            function animateHeroTitle() {
+                if (!heroTitle) return;
+
+                const originalContent = heroTitle.innerHTML; 
+                heroTitle.innerHTML = ''; // Limpiar el contenido original
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = originalContent; // Usar un div temporal para parsear el HTML
+
+                let wordSpans = []; 
+
+                Array.from(tempDiv.childNodes).forEach((node, nodeIndex) => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        // Si es un nodo de texto, dividir por espacios y añadir spans con espacios
+                        const words = node.textContent.trim().split(/\s+/).filter(word => word.length > 0);
+                        words.forEach((word, wordIndex) => {
+                            const span = document.createElement('span');
+                            span.textContent = word;
+                            span.style.opacity = '0';
+                            span.style.transform = 'translateY(30px)';
+                            span.style.display = 'inline-block'; // Necesario para que transform funcione
+                            heroTitle.appendChild(span);
+                            wordSpans.push(span);
+
+                            // Añadir un espacio no rompible después de cada palabra, excepto la última del nodo de texto
+                            if (wordIndex < words.length - 1) {
+                                heroTitle.appendChild(document.createTextNode('\u00a0')); // Espacio no rompible
+                            }
+                        });
+                        // Si hay más nodos después de este, añadir un espacio normal al final del nodo de texto
+                        if (nodeIndex < tempDiv.childNodes.length - 1) {
+                            heroTitle.appendChild(document.createTextNode(' '));
+                        }
+
+                    } else if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('highlight')) {
+                        // Si es un span con clase ‘highlight’, clonar la estructura y animar sus palabras internas
+                        const highlightContainer = node.cloneNode(false); // Clonar el span highlight sin su contenido
+                        
+                        const innerWords = node.textContent.trim().split(/\s+/).filter(word => word.length > 0);
+                        innerWords.forEach((word, innerWordIndex) => {
+                            const span = document.createElement('span');
+                            span.textContent = word;
+                            span.style.opacity = '0';
+                            span.style.transform = 'translateY(30px)';
+                            span.style.display = 'inline-block';
+                            highlightContainer.appendChild(span); 
+                            wordSpans.push(span);
+
+                            // Añadir un espacio no rompible después de cada palabra dentro del highlight
+                            if (innerWordIndex < innerWords.length - 1) {
+                                highlightContainer.appendChild(document.createTextNode('\u00a0'));
+                            }
+                        });
+                        heroTitle.appendChild(highlightContainer); 
+
+                        // Si hay más nodos después del highlight, añadir un espacio normal
+                        if (nodeIndex < tempDiv.childNodes.length - 1) {
+                            heroTitle.appendChild(document.createTextNode(' '));
+                        }
+
+                    } else if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Si es cualquier otro elemento, simplemente clonarlo y añadirlo
+                        heroTitle.appendChild(node.cloneNode(true));
+                        // Asegurarse de que los elementos HTML originales (como <br>) mantengan su espaciado
+                        if (nodeIndex < tempDiv.childNodes.length - 1 && node.textContent.trim().length > 0) {
+                             heroTitle.appendChild(document.createTextNode(' ')); // Añadir un espacio después de elementos no animados
+                        }
+                    }
+                });
+
+                // Inicia la animación después de un breve retraso
+                setTimeout(() => {
+                    wordSpans.forEach((span, index) => {
+                        span.style.opacity = '1';
+                        span.style.transform = 'translateY(0)';
+                        span.style.transition = `all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${index * 0.05}s`;
+                    });
+                }, 300);
+            }
+                    
+            /**
+             * Implementa un efecto de escritura (typing) en el subtítulo del hero.
+             */
+            function animateHeroSubtitleTyping() {
+                if (!heroSubtitle) return;
+                const originalText = heroSubtitle.textContent;
+                heroSubtitle.innerHTML = ''; // Limpiar el contenido para el efecto typing
+                let i = 0;
+                
+                function type() {
+                    if (i < originalText.length) {
+                        heroSubtitle.innerHTML += originalText.charAt(i);
+                        i++;
+                        setTimeout(type, 30); // Velocidad de escritura por carácter
+                    }
+                }
+                
+                setTimeout(type, 1000); // Retraso antes de que empiece el efecto
+            }
+
+            /**
+             * Crea elementos flotantes decorativos en la sección hero para un efecto visual sutil.
+             */
+            function createFloatingElements() {
+                const heroSection = document.querySelector('.hero');
+                if (!heroSection) return; 
+
+                const particlesContainer = document.createElement('div');
+                particlesContainer.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none; /* Ignora eventos del ratón */
+                    overflow: hidden; /* Oculta partículas fuera de los límites */
+                    z-index: 0; /* Detrás del contenido del hero */
+                `;
+                heroSection.style.position = 'relative'; // Asegura que el contenedor de partículas se posicione correctamente
+                heroSection.appendChild(particlesContainer);
+                
+                const numberOfParticles = Math.floor(Math.random() * 10) + 5; // Genera entre 5 y 15 partículas
+                
+                for (let i = 0; i < numberOfParticles; i++) {
+                    const particle = document.createElement('div');
+                    const size = Math.random() * 20 + 10; // Tamaño entre 10px y 30px
+                    const left = Math.random() * 100; // Posición horizontal aleatoria (0-100%)
+                    const top = Math.random() * 100; // Posición vertical aleatoria (0-100%)
+                    const duration = Math.random() * 8 + 6; // Duración de la animación entre 6s y 14s
+                    const delay = Math.random() * 5; // Retraso aleatorio para escalonar animaciones
+                    const opacity = Math.random() * 0.3 + 0.1; // Opacidad baja para un efecto sutil
+                    
+                    particle.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size}px;
+                        background: rgba(37, 99, 235, ${opacity}); /* Color azul principal con opacidad */
+                        border-radius: 50%;
+                        animation: float ${duration}s ease-in-out infinite; /* Usa la animación ‘float’ definida en CSS */
+                        animation-delay: ${delay}s;
+                        left: ${left}%;
+                        top: ${top}%;
+                    `;
+                    particlesContainer.appendChild(particle);
+                }
+            }
+
+
+            // ===========================================
+            // 4. ANIMACIONES BASADAS EN EL SCROLL (INTERSECTION OBSERVER)
+            // ===========================================
+
+            /**
+             * Anima un contador numérico desde cero hasta un valor objetivo.
+             * @param {HTMLElement} element - El elemento DOM donde se mostrará el número.
+             * @param {string} target - El valor objetivo (puede incluir %, +, o ‘años’).
+             * @param {number} duration - Duración de la animación en milisegundos.
+             */
+            function animateCounter(element, target, duration = 2000) {
+                const start = 0;
+                const startTime = performance.now();
+                const isPercentage = target.includes('%');
+                const isPlus = target.includes('+') && !isPercentage; 
+                const isYears = target.includes('años');
+                const targetNumber = parseInt(target.replace(/[^0-9]/g, '')); // Extrae solo el número
+
+                function updateCounter(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    const easeOut = 1 - Math.pow(1 - progress, 3); // Función de easing (easeOutCubic)
+                    const current = Math.floor(start + (targetNumber * easeOut));
+                    
+                    if (isPercentage) {
+                        element.textContent = current + '%';
+                    } else if (isPlus) {
+                        element.textContent = current + '+';
+                    } else if (isYears) {
+                        element.textContent = current + ' años';
+                    } else {
+                        element.textContent = current;
+                    }
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(updateCounter); 
+                    } else {
+                        element.textContent = target; // Asegura el valor final exacto
+                    }
+                }
+                requestAnimationFrame(updateCounter); 
+            }
+
+            /**
+             * Configura un Intersection Observer para disparar animaciones
+             * cuando los elementos entran en la vista del usuario.
+             */
+            function initScrollAnimations() {
+                const observerOptions = {
+                    threshold: 0.1, // El 10% del elemento debe ser visible
+                    rootMargin: '0px 0px -50px 0px' // Activa un poco antes de que el elemento entre completamente
+                };
+                
+                const observer = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const element = entry.target;
+                            
+                            // Si es la sección de estadísticas, inicia el contador
+                            if (element.classList.contains('stats')) {
+                                const originalTexts = ['150+', '500%', '95%', '3 años'];
+                                statsNumbers.forEach((stat, index) => {
+                                    setTimeout(() => {
+                                        animateCounter(stat, originalTexts[index], 1500);
+                                    }, index * 200); // Retraso escalonado
+                                    // Asegurarse de que el stat-item padre también se vuelva visible
+                                    stat.closest('.stat-item')?.classList.add('is-visible');
+                                });
+                            }
+                            
+                            // Añade la clase ‘is-visible’ para disparar animaciones CSS
+                            // Estos elementos deben tener la clase ‘animated’ en su HTML inicial.
+                            if (element.classList.contains('service-card') || 
+                                element.classList.contains('case-card') ||
+                                element.classList.contains('testimonial-card') || 
+                                element.classList.contains('stat-item')) { 
+                                element.classList.add('is-visible'); // ¡CAMBIADO de ‘animated’ a ‘is-visible’!
+                            }
+                            
+                            observer.unobserve(element); // Deja de observar una vez que la animación ha ocurrido
+                        }
+                    });
+                }, observerOptions);
+                
+                // Elementos a observar para animaciones
+                const elementsToAnimate = [
+                    // Solo el contenedor ‘stats’ se observa para el contador,
+                    // los ‘stat-item’ individuales se observan para su propia animación de aparición
+                    document.querySelector('.stats'), 
+                    ...serviceCards,
+                    ...caseCards,
+                    ...testimonialCards, 
+                    ...document.querySelectorAll('.stat-item') 
+                ].filter(Boolean); // Filtra cualquier elemento que pueda ser nulo
+                
+                elementsToAnimate.forEach(element => {
+                    if (element) {
+                        observer.observe(element);
+                    }
+                });
+            }
+
+            // ===========================================
+            // 5. MANEJO DEL FORMULARIO DE CONTACTO (SIMULADO)
+            // ===========================================
+
+            /**
+             * Configura el manejo de envío del formulario de contacto (simulado).
+             */
+            function handleContactForm() {
+                if (!contactForm) return;
+
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Evita el envío por defecto del formulario
+                    
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    
+                    submitBtn.textContent = 'Enviando...';
+                    submitBtn.style.background = '#64748b'; // Color gris mientras se envía
+                    submitBtn.disabled = true; // Deshabilita el botón
+                    
+                    setTimeout(() => {
+                        submitBtn.textContent = '¡Enviado! ✓';
+                        submitBtn.style.background = '#10b981'; // Color verde al éxito
+                        
+                        setTimeout(() => {
+                            submitBtn.textContent = originalText; // Restaura el texto
+                            submitBtn.style.background = ''; // Restaura el color
+                            submitBtn.disabled = false; // Habilita el botón
+                            this.reset(); // Limpia los campos del formulario
+                        }, 2000); // Muestra el mensaje de éxito por 2 segundos
+                        console.log('Formulario enviado exitosamente (simulado)');
+                    }, 1500); // Simula un retraso de envío de 1.5 segundos
+                });
+            }
+
+            // ===========================================
+            // FUNCIONES DE UTILIDAD
+            // ===========================================
+
+            /**
+             * Limita la frecuencia con la que se puede ejecutar una función.
+             * Útil para eventos que se disparan muy a menudo (ej. scroll, resize).
+             * @param {function} func - La función a limitar.
+             * @param {number} limit - El tiempo en milisegundos para limitar la ejecución.
+             * @returns {function} Una versión limitada de la función original.
+             */
+            function throttle(func, limit) {
+                let inThrottle;
+                return function() {
+                    const args = arguments;
+                    const context = this;
+                    if (!inThrottle) {
+                        func.apply(context, args);
+                        inThrottle = true;
+                        setTimeout(() => inThrottle = false, limit);
+                    }
+                }
+            }
+
+            // ===========================================
+            // INICIALIZACIÓN DE TODAS LAS FUNCIONES
+            // ===========================================
+            initSmoothScrolling();
+            animateHeroTitle();
+            animateHeroSubtitleTyping();
+            createFloatingElements();
+            initScrollAnimations();
+            handleContactForm();
+        });
+    </script>
+
+    <!-- Script para cargar React y ReactDOM desde CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react.production.min.js"></script>
+
+    <!-- Script para montar la aplicación React PRINCIPAL (Pronóstico y Selección de Radio) y el Reproductor Flotante -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Componente React Principal: Muestra el pronóstico del tiempo y permite seleccionar estaciones de radio
+        const MainApp = () => {
+            // Estados para la instancia de Firestore, Auth y el ID de usuario
+            const [db, setDb] = React.useState(null);
+            const [auth, setAuth] = React.useState(null);
+            const [userId, setUserId] = React.useState(null);
+            // Estados para el pronóstico del tiempo
+            const [weatherForecast, setWeatherForecast] = React.useState(null);
+            const [loadingWeather, setLoadingWeather] = React.useState(true);
+            const [errorWeather, setErrorWeather] = React.useState(null);
+            const [location, setLocation] = React.useState('Madrid'); // Ubicación por defecto
+
+            // Estados para las notificaciones personalizadas (modal)
+            const [showNotification, setShowNotification] = React.useState(false);
+            const [notificationMessage, setNotificationMessage] = React.useState('');
+
+            // Estado para la estación flotante seleccionada en la UI de MainApp
+            const [selectedFloatingStation, setSelectedFloatingStation] = React.useState(null);
+
+            // Lista de estaciones de radio disponibles (se ha añadido la tuya como primera opción)
+            const radioStations = [
+                { name: 'Reggae Stream', url: 'https://bit.ly/Reggae141' }, // Tu enlace de Stream
+                { name: 'NonStopPlay.com (Dance)', url: 'https://stream.nonstopplay.com/nsp-mp3' },
+                { name: 'Absolute Radio 80s', url: 'https://icy.unitedradio.uk/Absolute80s.mp3' },
+                { name: 'Radio Caraibes FM', url: 'https://radiocaraibesfm.radioca.st/stream' },
+                { name: 'SomaFM Groove Salad', url: 'https://somafm.com/groovesalad.pls' },
+                { name: 'Classical Public Radio', url: 'https://stream.kclv.org/kclv-128k.mp3' }
+            ];
+
+            // Hook para inicializar Firebase y manejar la autenticación
+            React.useEffect(() => {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    const firestore = getFirestore(app);
+                    const firebaseAuth = getAuth(app);
+                    setDb(firestore);
+                    setAuth(firebaseAuth);
+
+                    // Listener para el estado de autenticación
+                    onAuthStateChanged(firebaseAuth, async (user) => {
+                        if (user) {
+                            setUserId(user.uid);
+                            // También establecer la estación flotante predeterminada al cargar la app
+                            setSelectedFloatingStation(radioStations[0]); 
+                        } else {
+                            try {
+                                // Intentar iniciar sesión con el token personalizado o de forma anónima
+                                if (typeof __initial_auth_token !== 'undefined') {
+                                    await signInWithCustomToken(firebaseAuth, __initial_auth_token);
+                                } else {
+                                    await signInAnonymously(firebaseAuth);
+                                }
+                            } catch (anonymousAuthError) {
+                                console.error("Error al iniciar sesión de forma anónima:", anonymousAuthError);
+                                setNotificationMessage(`Error de autenticación anónima: ${anonymousAuthError.message}`);
+                                setShowNotification(true);
+                            }
+                        }
+                    });
+                } catch (firebaseInitError) {
+                    console.error("Error al inicializar Firebase:", firebaseInitError);
+                    setNotificationMessage(`Error al inicializar Firebase: ${firebaseInitError.message}`);
+                    setShowNotification(true);
+                }
+            }, []); // Se ejecuta solo una vez al montar el componente
+
+            // Hook para obtener el pronóstico del tiempo una vez que db y userId están disponibles
+            React.useEffect(() => {
+                // No proceder si db o userId no están inicializados
+                if (!db || !userId) {
+                    setLoadingWeather(false); // Detener el estado de carga si no hay autenticación
+                    return;
+                }
+
+                const fetchWeather = async () => {
+                    setLoadingWeather(true);
+                    setErrorWeather(null);
+
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    // Ruta de la colección para preferencias de usuario (privada)
+                    const collectionPath = `artifacts/${appId}/users/${userId}/weather_preferences`;
+                    const docRef = doc(db, collectionPath, 'preferences');
+
+                    try {
+                        const docSnap = await getDoc(docRef);
+                        let userLocation = location;
+
+                        // Si el documento existe, usar la ubicación guardada, si no, guardar la ubicación por defecto
+                        if (docSnap.exists()) {
+                            userLocation = docSnap.data().location || location;
+                            setLocation(userLocation); // Actualizar el estado de la ubicación
+                        } else {
+                            await setDoc(docRef, { location: userLocation });
+                        }
+
+                        // Preparar el prompt para el modelo Gemini
+                        const prompt = `Proporcione un pronóstico del tiempo conciso para ${userLocation} hoy, incluyendo temperatura, condiciones generales y humedad. Responda directamente con el pronóstico sin preámbulos.`;
+                        const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                        const apiKey = ""; // API Key se proporciona automáticamente en el entorno Canvas
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                        // Realizar la llamada a la API de Gemini
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(`Error HTTP: ${response.status} - ${errorData.error.message}`);
+                        }
+
+                        const result = await response.json();
+                        // Extraer el texto del pronóstico
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            setWeatherForecast(result.candidates[0].content.parts[0].text);
+                        } else {
+                            setWeatherForecast('No se pudo obtener el pronóstico del tiempo.');
+                        }
+                    } catch (err) {
+                        console.error("Error al obtener el pronóstico del tiempo:", err);
+                        setErrorWeather(`Error al obtener el pronóstico del tiempo: ${err.message}`);
+                        setNotificationMessage(`Error al obtener el pronóstico del tiempo: ${err.message}`);
+                        setShowNotification(true);
+                    } finally {
+                        setLoadingWeather(false);
+                    }
+                };
+
+                // Solo si el userId está disponible, intentar obtener el pronóstico
+                fetchWeather();
+            }, [db, userId, location]); // Dependencias: se re-ejecuta si db, userId o location cambian
+
+            // Función para cerrar la notificación personalizada
+            const closeNotification = () => {
+                setShowNotification(false);
+                setNotificationMessage('');
+            };
+
+            // Función para emitir un evento personalizado para el reproductor flotante al cambiar la estación
+            const handleSelectStation = (station) => {
+                setSelectedFloatingStation(station); // Actualizar el estado de la estación seleccionada
+                const customEvent = new CustomEvent('changeFloatingStation', { detail: station });
+                window.dispatchEvent(customEvent); // Dispara un evento global que el reproductor flotante escuchará
+                setNotificationMessage(`Estación seleccionada: ${station.name}`);
+                setShowNotification(true);
+            };
+
+            return (
+                <div className="bg-white p-4 font-inter rounded-xl shadow-inner w-full mx-auto max-w-2xl">
+                    {/* Modal de Notificación */}
+                    {showNotification && (
+                        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+                            <div className="bg-white rounded-xl p-6 shadow-xl max-w-sm w-full mx-4">
+                                <h3 className="text-xl font-bold text-gray-900 mb-4">Notificación</h3>
+                                <p className="text-gray-700 mb-6">{notificationMessage}</p>
+                                <button
+                                    onClick={closeNotification}
+                                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                                >
+                                    Cerrar
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tarjeta de Contenido Principal (Pronóstico del Tiempo) */}
+                    <div className="bg-white rounded-xl shadow-lg p-8 w-full mx-auto text-center mb-8">
+                        <h1 className="text-3xl font-bold text-gray-800 mb-6">Mi Aplicación Interactiva</h1>
+
+                        {/* Muestra el ID de Usuario para depuración y multi-usuario */}
+                        {userId && (
+                            <p className="text-sm text-gray-500 mb-4 break-all">
+                                ID de Usuario: <span className="font-mono bg-gray-100 px-2 py-1 rounded-md">{userId}</span>
+                            </p>
+                        )}
+
+                        {/* Sección del Pronóstico del Tiempo */}
+                        <div className="mb-8">
+                            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Pronóstico del Tiempo para {location}</h2>
+                            {loadingWeather ? (
+                                <p className="text-gray-600">Cargando pronóstico...</p>
+                            ) : errorWeather ? (
+                                <p className="text-red-500">{errorWeather}</p>
+                            ) : (
+                                <div className="bg-blue-50 p-4 rounded-lg shadow-inner">
+                                    <p className="text-lg text-gray-800 leading-relaxed">{weatherForecast}</p>
+                                </div>
+                            )}
+                            <div className="mt-4">
+                                <input
+                                    type="text"
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
+                                    placeholder="Ingresa una ciudad"
+                                    className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-xs"
+                                />
+                                <button
+                                    onClick={() => { /* location state change will trigger useEffect to fetch new weather */ }}
+                                    className="ml-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                                >
+                                    Actualizar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Selección de Estación de Música -->
+                    <div className="bg-white rounded-xl shadow-lg p-6 w-full mx-auto text-center">
+                        <h2 className="text-2xl font-semibold text-gray-700 mb-4">Seleccionar Estación de Música</h2>
+                        <p className="text-gray-600 mb-4">Elige una estación para el reproductor flotante:</p>
+                        <div className="flex flex-wrap justify-center gap-3">
+                            {radioStations.map((station) => (
+                                <button
+                                    key={station.name}
+                                    onClick={() => handleSelectStation(station)}
+                                    className={`py-2 px-5 rounded-full shadow-sm transition duration-300 text-sm md:text-base
+                                        ${selectedFloatingStation && selectedFloatingStation.name === station.name
+                                            ? 'bg-blue-600 text-white font-semibold ring-2 ring-blue-500 ring-offset-2' // Estilo activo
+                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2'}
+                                    `}
+                                >
+                                    {station.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Componente React para el Reproductor de Audio Flotante
+        const FloatingPlayer = () => {
+            const audioRef = React.useRef(new Audio());
+            const [isPlaying, setIsPlaying] = React.useState(false);
+            const [currentFloatingStation, setCurrentFloatingStation] = React.useState(
+                // Establecer la estación inicial a tu enlace de Reggae
+                { name: 'Reggae Stream', url: 'https://bit.ly/Reggae141' } 
+            );
+
+            // Efecto para inicializar el audio y manejar cambios de estación externos
+            React.useEffect(() => {
+                const audio = audioRef.current;
+                audio.volume = 0.7; // Volumen predeterminado
+
+                // Asignar la URL de la estación actual al elemento de audio
+                audio.src = currentFloatingStation.url;
+                audio.load(); // Cargar la nueva fuente de audio
+
+                // Handlers para eventos del audio
+                const handleEnded = () => setIsPlaying(false);
+                const handleError = (e) => {
+                    console.error("Error de audio en flotante:", e);
+                    setIsPlaying(false);
+                    // Aquí podrías emitir una notificación al usuario si hay un error crítico
+                };
+                const handlePlay = () => setIsPlaying(true);
+                const handlePause = () => setIsPlaying(false);
+
+                audio.addEventListener('ended', handleEnded);
+                audio.addEventListener('error', handleError);
+                audio.addEventListener('play', handlePlay);
+                audio.addEventListener('pause', handlePause);
+
+                // Listener para el evento personalizado desde MainApp
+                const handleExternalStationChange = (event) => {
+                    const newStation = event.detail;
+                    setCurrentFloatingStation(newStation); // Actualiza la estación
+                    audio.src = newStation.url;
+                    audio.load();
+                    // Solo intentar reproducir si ya estaba sonando o si se acaba de seleccionar
+                    if (isPlaying || event.detail.shouldPlayImmediately) { // ‘shouldPlayImmediately’ es una bandera opcional para controlar la reproducción
+                        audio.play().catch(err => console.error("Error al reproducir estación en flotante (por cambio externo):", err));
+                    }
+                };
+
+                window.addEventListener('changeFloatingStation', handleExternalStationChange);
+
+                // Limpiar listeners al desmontar el componente
+                return () => {
+                    audio.removeEventListener('ended', handleEnded);
+                    audio.removeEventListener('error', handleError);
+                    audio.removeEventListener('play', handlePlay);
+                    audio.removeEventListener('pause', handlePause);
+                    window.removeEventListener('changeFloatingStation', handleExternalStationChange);
+                    audio.pause(); // Pausar audio al desmontar
+                };
+            }, [currentFloatingStation]); // Se re-ejecuta cuando cambia la estación
+
+            // Función para alternar reproducción/pausa
+            const togglePlayPause = () => {
+                const audio = audioRef.current;
+                if (isPlaying) {
+                    audio.pause();
+                } else {
+                    if (audio.src) { // Asegurarse de que hay una fuente de audio
+                        audio.play().catch(e => {
+                            console.error("Error al reproducir en flotante:", e);
+                            // Notificación al usuario si la reproducción falla (ej. por bloqueo del navegador)
+                            const customEvent = new CustomEvent('showCustomNotification', { 
+                                detail: { 
+                                    message: "La reproducción automática fue bloqueada. Haz clic para reproducir.", 
+                                    type: "warning" 
+                                } 
+                            });
+                            window.dispatchEvent(customEvent);
+                        });
+                    }
+                }
+            };
+
+            return (
+                <div id="floating-player-button" onClick={togglePlayPause} className="relative group">
+                    <button aria-label={isPlaying ? "Pausar música" : "Reproducir música"} className="focus:outline-none">
+                        {isPlaying ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197 2.132A1 1 0 0110 13.82V10.18a1 1 0 011.555-.832l3.197 2.132a1 1 0 010 1.664z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        )}
+                    </button>
+                    <!-- Tooltip con el nombre de la estación -->
+                    <div className="tooltip">
+                        {currentFloatingStation.name}
+                    </div>
+                </div>
+            );
+        };
+
+        // Renderizar el componente React PRINCIPAL en su contenedor
+        const mainContainer = document.getElementById('react-app-main-content');
+        if (mainContainer) {
+            const mainRoot = ReactDOM.createRoot(mainContainer);
+            mainRoot.render(React.createElement(MainApp));
+        } else {
+            console.error("El contenedor 'react-app-main-content' no fue encontrado.");
         }
 
-        // --- INICIAR LA APLICACIÓN ---
-        window.onload = fetchImageOfTheDay;
+        // Renderizar el componente React del REPRODUCTOR FLOTANTE en su contenedor
+        const floatingContainer = document.getElementById('floating-player-root');
+        if (floatingContainer) {
+            const floatingRoot = ReactDOM.createRoot(floatingContainer);
+            floatingRoot.render(React.createElement(FloatingPlayer));
+        } else {
+            console.error("El contenedor 'floating-player-root' no fue encontrado.");
+        }
     </script>
 </body>
 </html>
