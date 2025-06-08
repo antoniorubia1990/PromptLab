@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imagen del Día</title>
+    <!-- Tailwind CSS para un diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos personalizados y de carga */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #3498db;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <!-- He hecho este contenedor principal más robusto para evitar solapamientos -->
+    <main class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden relative z-10">
+        <div class="p-8">
+            <h1 class="text-3xl font-bold text-center text-gray-900 mb-2">Imagen del Día</h1>
+            <p class="text-center text-gray-600 mb-6">Una nueva imagen inspiradora cada vez que visitas.</p>
+        </div>
+
+        <!-- Contenedor de la Imagen -->
+        <div id="image-container" class="bg-gray-200 min-h-[400px] flex items-center justify-center">
+            <!-- Loader (indicador de carga) se mostrará aquí -->
+            <div id="loader" class="loader"></div>
+        </div>
+        
+        <!-- Créditos de la Imagen -->
+        <div id="credits" class="p-6 bg-gray-50 text-center">
+             <!-- La información del autor se cargará aquí -->
+        </div>
+    </main>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        // Recuerda generar una NUEVA clave si la anterior fue expuesta.
+        const apiKey = '_rA_cBSRPjqa6N1l16cJD1PyQX_K02AfqUfZ5CKxAXI';
+        
+        // --- ELEMENTOS DEL DOM ---
+        const imageContainer = document.getElementById('image-container');
+        const creditsContainer = document.getElementById('credits');
+        const loader = document.getElementById('loader');
+
+        // --- LÓGICA DE LA API ---
+        async function fetchImageOfTheDay() {
+            const topic = 'travel'; // ¡Cambié el tema a "viajes" para que veas algo nuevo!
+            const apiUrl = `https://api.unsplash.com/photos/random?query=${topic}&orientation=landscape&client_id=${apiKey}`;
+
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    if (response.status === 401) {
+                         throw new Error('La clave de API no es válida. Por favor, genera una nueva en Unsplash y pégala aquí.');
+                    } else if (response.status === 403) {
+                         throw new Error('Límite de peticiones alcanzado. Inténtalo de nuevo en una hora.');
+                    }
+                    throw new Error(`Error en la API: ${response.statusText}`);
+                }
+                const data = await response.json();
+                displayImage(data);
+            } catch (error) {
+                console.error('Error al obtener la imagen:', error);
+                displayError(error.message);
+            }
+        }
+
+        // Función para mostrar la imagen y los créditos en la página
+        function displayImage(data) {
+            loader.style.display = 'none';
+            imageContainer.innerHTML = '';
+
+            const img = document.createElement('img');
+            img.src = data.urls.regular;
+            img.alt = data.alt_description || 'Imagen del día';
+            img.className = 'w-full h-full object-cover';
+            img.onerror = () => { displayError('Hubo un problema al cargar la imagen.'); };
+
+            imageContainer.appendChild(img);
+            creditsContainer.innerHTML = `
+                <p class="text-sm">
+                    Foto por 
+                    <a href="${data.user.links.html}?utm_source=image-of-the-day-app&utm_medium=referral" target="_blank" class="font-semibold text-blue-600 hover:underline">
+                        ${data.user.name}
+                    </a> 
+                    en 
+                    <a href="https://unsplash.com/?utm_source=image-of-the-day-app&utm_medium=referral" target="_blank" class="font-semibold text-blue-600 hover:underline">
+                        Unsplash
+                    </a>
+                </p>
+            `;
+        }
+        
+        // Función para mostrar mensajes de error
+        function displayError(message) {
+            loader.style.display = 'none';
+            imageContainer.innerHTML = '';
+            creditsContainer.innerHTML = `<p class="text-red-500 font-semibold">${message}</p>`;
+        }
+
+        // --- INICIAR LA APLICACIÓN ---
+        window.onload = fetchImageOfTheDay;
+    </script>
+</body>
+</html>
